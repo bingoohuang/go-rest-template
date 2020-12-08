@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	"github.com/bingoohuang/go-rest-template/pkg/helpers"
 
 	"github.com/bingoohuang/go-rest-template/internal/api/router"
@@ -22,5 +23,5 @@ func Run(configPath string) {
 	web := router.Setup()
 
 	fmt.Println("REST API Running on port", c.Server.Port)
-	_ = web.Run(":" + c.Server.Port)
+	_ = web.Run(fmt.Sprintf(":%d", c.Server.Port))
 }

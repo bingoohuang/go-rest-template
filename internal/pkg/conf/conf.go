@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -19,7 +20,7 @@ type DBConf struct {
 	Username     string
 	Password     string
 	Host         string
-	Port         string
+	Port         int
 	MaxLifetime  int
 	MaxOpenConns int
 	MaxIdleConns int
@@ -28,17 +29,19 @@ type DBConf struct {
 func (d DBConf) GormOpen() (dialect, datasource string) {
 	switch d.Driver {
 	case "sqlite":
-		return "sqlite3", "./" + d.Dbname + ".db"
+		return "sqlite3", d.Dbname
 	case "postgres":
-		return "postgres", "host=" + d.Host + " port=" + d.Port + " user=" + d.Username + " dbname=" + d.Dbname + "  sslmode=disable password=" + d.Password
+		return "postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s  sslmode=disable password=%s",
+			d.Host, d.Port, d.Username, d.Dbname, d.Password)
 	case "mysql":
-		return "mysql", d.Username + ":" + d.Password + "@tcp(" + d.Host + ":" + d.Port + ")/" + d.Dbname + "?charset=utf8&parseTime=True&loc=Local"
+		return "mysql", fmt.Sprintf("%s:%s@tcp(%s:%d))/%s?charset=utf8&parseTime=True&loc=Local",
+			d.Username, d.Password, d.Host, d.Port, d.Dbname)
 	}
 	return "", ""
 }
 
 type ServerConf struct {
-	Port   string
+	Port   int
 	Secret string
 	Mode   string
 }

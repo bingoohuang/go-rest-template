@@ -43,7 +43,6 @@ func TestGetAllUsers(t *testing.T) {
 
 func TestGetUserById(t *testing.T) {
 	db.SetupDB()
-	db.SetupDB()
 	s := persist.GetUserRepo()
 	if _, err := s.Get(fmt.Sprint(userTest.ID)); err != nil {
 		t.Fatalf("Expected no error, got %v", err)
