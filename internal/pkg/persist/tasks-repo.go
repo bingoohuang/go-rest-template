@@ -1,13 +1,14 @@
-package persistence
+package persist
 
 import (
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/db"
-	models "github.com/antonioalfa22/go-rest-template/internal/pkg/models/tasks"
 	"strconv"
+
+	"github.com/bingoohuang/go-rest-template/internal/pkg/db"
+	models "github.com/bingoohuang/go-rest-template/internal/pkg/models/tasks"
 )
 
-
 type TaskRepository struct{}
+
 var taskRepository *TaskRepository
 
 func GetTaskRepository() *TaskRepository {
@@ -41,12 +42,17 @@ func (r *TaskRepository) Query(q *models.Task) (*[]models.Task, error) {
 }
 
 func (r *TaskRepository) Add(task *models.Task) error {
-	err := Create(&task)
-	err = Save(&task)
-	return err
+	if err := Create(&task); err != nil {
+		return err
+	}
+
+	return Save(&task)
 }
 
-func (r *TaskRepository) Update(task *models.Task) error { return db.GetDB().Omit("User").Save(&task).Error }
+func (r *TaskRepository) Update(task *models.Task) error {
+	return db.GetDB().Omit("User").Save(&task).Error
+}
 
-func (r *TaskRepository) Delete(task *models.Task) error { return db.GetDB().Unscoped().Delete(&task).Error }
-
+func (r *TaskRepository) Delete(task *models.Task) error {
+	return db.GetDB().Unscoped().Delete(&task).Error
+}

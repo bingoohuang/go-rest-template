@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Model struct {
 	ID        uint64    `gorm:"column:id;primary_key;auto_increment;" json:"id"`

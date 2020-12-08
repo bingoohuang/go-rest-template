@@ -1,8 +1,9 @@
 package users
 
 import (
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/models"
 	"time"
+
+	"github.com/bingoohuang/go-rest-template/internal/pkg/models"
 )
 
 type User struct {

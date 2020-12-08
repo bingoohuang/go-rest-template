@@ -1,7 +1,7 @@
-package persistence
+package persist
 
 import (
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/db"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/db"
 	"github.com/jinzhu/gorm"
 )
 
@@ -22,45 +22,45 @@ func Updates(where interface{}, value interface{}) error {
 
 // Delete
 func DeleteByModel(model interface{}) (count int64, err error) {
-	db := db.GetDB().Delete(model)
-	err = db.Error
+	d := db.GetDB().Delete(model)
+	err = d.Error
 	if err != nil {
 		return
 	}
-	count = db.RowsAffected
+	count = d.RowsAffected
 	return
 }
 
 // Delete
 func DeleteByWhere(model, where interface{}) (count int64, err error) {
-	db := db.GetDB().Where(where).Delete(model)
-	err = db.Error
+	d := db.GetDB().Where(where).Delete(model)
+	err = d.Error
 	if err != nil {
 		return
 	}
-	count = db.RowsAffected
+	count = d.RowsAffected
 	return
 }
 
 // Delete
 func DeleteByID(model interface{}, id uint64) (count int64, err error) {
-	db := db.GetDB().Where("id=?", id).Delete(model)
-	err = db.Error
+	d := db.GetDB().Where("id=?", id).Delete(model)
+	err = d.Error
 	if err != nil {
 		return
 	}
-	count = db.RowsAffected
+	count = d.RowsAffected
 	return
 }
 
 // Delete
 func DeleteByIDS(model interface{}, ids []uint64) (count int64, err error) {
-	db := db.GetDB().Where("id in (?)", ids).Delete(model)
-	err = db.Error
+	d := db.GetDB().Where("id in (?)", ids).Delete(model)
+	err = d.Error
 	if err != nil {
 		return
 	}
-	count = db.RowsAffected
+	count = d.RowsAffected
 	return
 }
 
@@ -75,11 +75,11 @@ func FirstByID(out interface{}, id string) (notFound bool, err error) {
 
 // First
 func First(where interface{}, out interface{}, associations []string) (notFound bool, err error) {
-	db := db.GetDB()
+	d := db.GetDB()
 	for _, a := range associations {
-		db = db.Preload(a)
+		d = d.Preload(a)
 	}
-	err = db.Where(where).First(out).Error
+	err = d.Where(where).First(out).Error
 	if err != nil {
 		notFound = gorm.IsRecordNotFoundError(err)
 	}
@@ -88,17 +88,17 @@ func First(where interface{}, out interface{}, associations []string) (notFound 
 
 // Find
 func Find(where interface{}, out interface{}, associations []string, orders ...string) error {
-	db := db.GetDB()
+	d := db.GetDB()
 	for _, a := range associations {
-		db = db.Preload(a)
+		d = d.Preload(a)
 	}
-	db = db.Where(where)
+	d = d.Where(where)
 	if len(orders) > 0 {
 		for _, order := range orders {
-			db = db.Order(order)
+			d = d.Order(order)
 		}
 	}
-	return db.Find(out).Error
+	return d.Find(out).Error
 }
 
 // Scan
@@ -112,11 +112,11 @@ func Scan(model, where interface{}, out interface{}) (notFound bool, err error) 
 
 // ScanList
 func ScanList(model, where interface{}, out interface{}, orders ...string) error {
-	db := db.GetDB().Model(model).Where(where)
+	d := db.GetDB().Model(model).Where(where)
 	if len(orders) > 0 {
 		for _, order := range orders {
-			db = db.Order(order)
+			d = d.Order(order)
 		}
 	}
-	return db.Scan(out).Error
+	return d.Scan(out).Error
 }

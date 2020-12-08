@@ -1,13 +1,12 @@
 package controllers
 
 import (
-	"errors"
-	models "github.com/antonioalfa22/go-rest-template/internal/pkg/models/tasks"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
-	"github.com/antonioalfa22/go-rest-template/pkg/http-err"
-	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
+
+	"github.com/bingoohuang/go-rest-template/internal/pkg/ginx"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/models/tasks"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/persist"
+	"github.com/gin-gonic/gin"
 )
 
 // GetTaskById godoc
@@ -18,15 +17,13 @@ import (
 // @Success 200 {object} tasks.Task
 // @Router /api/tasks/{id} [get]
 // @Security Authorization Token
-func GetTaskById(c *gin.Context) {
-	s := persistence.GetTaskRepository()
-	id := c.Param("id")
-	if task, err := s.Get(id); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("task not found"))
-		log.Println(err)
-	} else {
-		c.JSON(http.StatusOK, task)
+func GetTaskById(c *gin.Context, id string) ginx.Render {
+	task, err := persist.GetTaskRepository().Get(id)
+	if err != nil {
+		return ginx.NewNotFoundError("task not found", err)
 	}
+
+	return ginx.JSON(task)
 }
 
 // GetTasks godoc
@@ -39,62 +36,52 @@ func GetTaskById(c *gin.Context) {
 // @Success 200 {array} []tasks.Task
 // @Router /api/tasks [get]
 // @Security Authorization Token
-func GetTasks(c *gin.Context) {
-	s := persistence.GetTaskRepository()
-	var q models.Task
-	_ = c.Bind(&q)
-	if tasks, err := s.Query(&q); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("tasks not found"))
-		log.Println(err)
-	} else {
-		c.JSON(http.StatusOK, tasks)
+func GetTasks(c *gin.Context, bind interface{}) ginx.Render {
+	s := persist.GetTaskRepository()
+	q := bind.(tasks.Task)
+
+	t, err := s.Query(&q)
+	if err != nil {
+		return ginx.NewNotFoundError("tasks not found", err)
 	}
+
+	return ginx.JSON(t)
 }
 
-func CreateTask(c *gin.Context) {
-	s := persistence.GetTaskRepository()
-	var taskInput models.Task
-	_ = c.BindJSON(&taskInput)
+func CreateTask(c *gin.Context, bindJSON interface{}) ginx.Render {
+	s := persist.GetTaskRepository()
+	taskInput := bindJSON.(tasks.Task)
 	if err := s.Add(&taskInput); err != nil {
-		http_err.NewError(c, http.StatusBadRequest, err)
-		log.Println(err)
-	} else {
-		c.JSON(http.StatusCreated, taskInput)
+		return ginx.NewBadRequestError("", err)
 	}
+
+	return ginx.StatusJSON(http.StatusCreated, taskInput)
 }
 
-func UpdateTask(c *gin.Context) {
-	s := persistence.GetTaskRepository()
-	id := c.Params.ByName("id")
-	var taskInput models.Task
-	_ = c.BindJSON(&taskInput)
+func UpdateTask(c *gin.Context, id string, bindJSON interface{}) ginx.Render {
+	s := persist.GetTaskRepository()
+	taskInput := bindJSON.(tasks.Task)
 	if _, err := s.Get(id); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("task not found"))
-		log.Println(err)
-	} else {
-		if err := s.Update(&taskInput); err != nil {
-			http_err.NewError(c, http.StatusNotFound, err)
-			log.Println(err)
-		} else {
-			c.JSON(http.StatusOK, taskInput)
-		}
+		return ginx.NewNotFoundError("tasks not found", err)
 	}
+
+	if err := s.Update(&taskInput); err != nil {
+		return ginx.NewNotFoundError("", err)
+	}
+
+	return ginx.JSON(taskInput)
 }
 
-func DeleteTask(c *gin.Context) {
-	s := persistence.GetTaskRepository()
-	id := c.Params.ByName("id")
-	var taskInput models.Task
-	_ = c.BindJSON(&taskInput)
-	if task, err := s.Get(id); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("task not found"))
-		log.Println(err)
-	} else {
-		if err := s.Delete(task); err != nil {
-			http_err.NewError(c, http.StatusNotFound, err)
-			log.Println(err)
-		} else {
-			c.JSON(http.StatusNoContent, "")
-		}
+func DeleteTask(c *gin.Context, id string) ginx.Render {
+	s := persist.GetTaskRepository()
+	task, err := s.Get(id)
+	if err != nil {
+		return ginx.NewNotFoundError("task not found", err)
 	}
+
+	if err := s.Delete(task); err != nil {
+		return ginx.NewNotFoundError("", err)
+	}
+
+	return ginx.StatusJSON(http.StatusNoContent, "")
 }

@@ -1,7 +1,7 @@
-get-docs:
+swag:
 	go get -u github.com/swaggo/swag/cmd/swag
 
-docs: get-docs
+docs: swag
 	swag init --dir cmd/api --parseDependency --output docs
 
 build:
@@ -18,3 +18,13 @@ build-docker: build
 
 run-docker: build-docker
 	docker run -p 3000:3000 api-rest
+
+fmt:
+	gofumports -w .
+	gofumpt -w .
+	gofmt -s -w .
+	go mod tidy
+	go fmt ./...
+	revive .
+	goimports -w .
+	golangci-lint run ./...

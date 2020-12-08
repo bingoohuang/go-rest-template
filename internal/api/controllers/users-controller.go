@@ -1,14 +1,13 @@
 package controllers
 
 import (
-	"errors"
-	models "github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
-	"github.com/antonioalfa22/go-rest-template/pkg/crypto"
-	"github.com/antonioalfa22/go-rest-template/pkg/http-err"
-	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
+
+	"github.com/bingoohuang/go-rest-template/internal/pkg/ginx"
+	models "github.com/bingoohuang/go-rest-template/internal/pkg/models/users"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/persist"
+	"github.com/bingoohuang/go-rest-template/pkg/crypto"
+	"github.com/gin-gonic/gin"
 )
 
 type UserInput struct {
@@ -27,15 +26,13 @@ type UserInput struct {
 // @Success 200 {object} users.User
 // @Router /api/users/{id} [get]
 // @Security Authorization Token
-func GetUserById(c *gin.Context) {
-	s := persistence.GetUserRepository()
-	id := c.Param("id")
-	if user, err := s.Get(id); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
-		log.Println(err)
-	} else {
-		c.JSON(http.StatusOK, user)
+func GetUserById(c *gin.Context, id string) ginx.Render {
+	user, err := persist.GetUserRepo().Get(id)
+	if err != nil {
+		return ginx.NewNotFoundError("user not found", err)
 	}
+
+	return ginx.JSON(user)
 }
 
 // GetUsers godoc
@@ -48,22 +45,18 @@ func GetUserById(c *gin.Context) {
 // @Success 200 {array} []users.User
 // @Router /api/users [get]
 // @Security Authorization Token
-func GetUsers(c *gin.Context) {
-	s := persistence.GetUserRepository()
-	var q models.User
-	_ = c.Bind(&q)
-	if users, err := s.Query(&q); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("users not found"))
-		log.Println(err)
-	} else {
-		c.JSON(http.StatusOK, users)
+func GetUsers(c *gin.Context, bind interface{}) ginx.Render {
+	q := bind.(models.User)
+	users, err := persist.GetUserRepo().Query(&q)
+	if err != nil {
+		return ginx.NewNotFoundError("users not found", err)
 	}
+
+	return ginx.JSON(users)
 }
 
-func CreateUser(c *gin.Context) {
-	s := persistence.GetUserRepository()
-	var userInput UserInput
-	_ = c.BindJSON(&userInput)
+func CreateUser(c *gin.Context, bindJSON interface{}) ginx.Render {
+	userInput := bindJSON.(UserInput)
 	user := models.User{
 		Username:  userInput.Username,
 		Firstname: userInput.Firstname,
@@ -71,51 +64,43 @@ func CreateUser(c *gin.Context) {
 		Hash:      crypto.HashAndSalt([]byte(userInput.Password)),
 		Role:      models.UserRole{RoleName: userInput.Role},
 	}
-	if err := s.Add(&user); err != nil {
-		http_err.NewError(c, http.StatusBadRequest, err)
-		log.Println(err)
-	} else {
-		c.JSON(http.StatusCreated, user)
+	if err := persist.GetUserRepo().Add(&user); err != nil {
+		return ginx.NewBadRequestError("", err)
 	}
+
+	return ginx.StatusJSON(http.StatusCreated, user)
 }
 
-func UpdateUser(c *gin.Context) {
-	s := persistence.GetUserRepository()
-	id := c.Params.ByName("id")
-	var userInput UserInput
-	_ = c.BindJSON(&userInput)
-	if user, err := s.Get(id); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
-		log.Println(err)
-	} else {
-		user.Username = userInput.Username
-		user.Lastname = userInput.Lastname
-		user.Firstname = userInput.Firstname
-		user.Hash = crypto.HashAndSalt([]byte(userInput.Password))
-		user.Role = models.UserRole{RoleName: userInput.Role}
-		if err := s.Update(user); err != nil {
-			http_err.NewError(c, http.StatusNotFound, err)
-			log.Println(err)
-		} else {
-			c.JSON(http.StatusOK, user)
-		}
+func UpdateUser(c *gin.Context, id string, bindJSON interface{}) ginx.Render {
+	s := persist.GetUserRepo()
+	user, err := s.Get(id)
+	if err != nil {
+		return ginx.NewNotFoundError("user not found", err)
 	}
+
+	userInput := bindJSON.(UserInput)
+	user.Username = userInput.Username
+	user.Lastname = userInput.Lastname
+	user.Firstname = userInput.Firstname
+	user.Hash = crypto.HashAndSalt([]byte(userInput.Password))
+	user.Role = models.UserRole{RoleName: userInput.Role}
+	if err := s.Update(user); err != nil {
+		return ginx.NewNotFoundError("", err)
+	}
+
+	return ginx.JSON(user)
 }
 
-func DeleteUser(c *gin.Context) {
-	s := persistence.GetUserRepository()
-	id := c.Params.ByName("id")
-	var userInput UserInput
-	_ = c.BindJSON(&userInput)
-	if user, err := s.Get(id); err != nil {
-		http_err.NewError(c, http.StatusNotFound, errors.New("user not found"))
-		log.Println(err)
-	} else {
-		if err := s.Delete(user); err != nil {
-			http_err.NewError(c, http.StatusNotFound, err)
-			log.Println(err)
-		} else {
-			c.JSON(http.StatusNoContent, "")
-		}
+func DeleteUser(c *gin.Context, id string) ginx.Render {
+	s := persist.GetUserRepo()
+	user, err := s.Get(id)
+	if err != nil {
+		return ginx.NewNotFoundError("user not found", err)
 	}
+
+	if err := s.Delete(user); err != nil {
+		return ginx.NewNotFoundError("", err)
+	}
+
+	return ginx.StatusJSON(http.StatusNoContent, "")
 }

@@ -1,9 +1,10 @@
 package tasks
 
 import (
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/models"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
 	"time"
+
+	"github.com/bingoohuang/go-rest-template/internal/pkg/models"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/models/users"
 )
 
 type Task struct {

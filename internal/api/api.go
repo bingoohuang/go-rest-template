@@ -2,27 +2,25 @@ package api
 
 import (
 	"fmt"
+	"github.com/bingoohuang/go-rest-template/pkg/helpers"
 
-	"github.com/antonioalfa22/go-rest-template/internal/api/router"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/config"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/db"
+	"github.com/bingoohuang/go-rest-template/internal/api/router"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/conf"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/db"
 	"github.com/gin-gonic/gin"
 )
 
 func setConfiguration(configPath string) {
-	config.Setup(configPath)
+	conf.Setup(configPath)
 	db.SetupDB()
-	gin.SetMode(config.GetConfig().Server.Mode)
+	gin.SetMode(conf.GetConf().Server.Mode)
 }
 
 func Run(configPath string) {
-	if configPath == "" {
-		configPath = "data/config.yml"
-	}
-	setConfiguration(configPath)
-	conf := config.GetConfig()
+	setConfiguration(helpers.DefaultTo(configPath, "data/conf.yml"))
+	c := conf.GetConf()
 	web := router.Setup()
-	fmt.Println("Go API REST Running on port " + conf.Server.Port)
-	fmt.Println("==================>")
-	_ = web.Run(":" + conf.Server.Port)
+
+	fmt.Println("REST API Running on port", c.Server.Port)
+	_ = web.Run(":" + c.Server.Port)
 }

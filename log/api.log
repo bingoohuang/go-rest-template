@@ -1,0 +1,2 @@
+::1 - - [2020-12-08 14:56:15 +0800] "GET /api/users HTTP/1.1 200 1.942981ms " " Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" " "
+::1 - - [2020-12-08 14:56:26 +0800] "GET /api/users/1 HTTP/1.1 200 991.522µs " " Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" " "

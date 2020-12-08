@@ -2,17 +2,18 @@ package test
 
 import (
 	"fmt"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/config"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/db"
-	models "github.com/antonioalfa22/go-rest-template/internal/pkg/models/users"
-	"github.com/antonioalfa22/go-rest-template/internal/pkg/persistence"
 	"testing"
+
+	"github.com/bingoohuang/go-rest-template/internal/pkg/conf"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/db"
+	models "github.com/bingoohuang/go-rest-template/internal/pkg/models/users"
+	"github.com/bingoohuang/go-rest-template/internal/pkg/persist"
 )
 
 var userTest models.User
 
 func Setup() {
-	config.Setup("./config.yml")
+	conf.Setup("config.yml")
 	db.SetupDB()
 	db.GetDB().Exec("DELETE FROM users")
 }
@@ -26,7 +27,7 @@ func TestAddUser(t *testing.T) {
 		Hash:      "hash",
 		Role:      models.UserRole{RoleName: "user"},
 	}
-	s := persistence.GetUserRepository()
+	s := persist.GetUserRepo()
 	if err := s.Add(&user); err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -34,7 +35,7 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestGetAllUsers(t *testing.T) {
-	s := persistence.GetUserRepository()
+	s := persist.GetUserRepo()
 	if _, err := s.All(); err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -43,7 +44,7 @@ func TestGetAllUsers(t *testing.T) {
 func TestGetUserById(t *testing.T) {
 	db.SetupDB()
 	db.SetupDB()
-	s := persistence.GetUserRepository()
+	s := persist.GetUserRepo()
 	if _, err := s.Get(fmt.Sprint(userTest.ID)); err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

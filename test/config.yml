@@ -1,4 +1,4 @@
-database:
+db:
   driver: "sqlite"
   dbname: "database"
   username: "user"
