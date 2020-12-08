@@ -23,5 +23,5 @@ import (
 // @name Authorization
 
 func main() {
-	api.Run("")
+	api.Run()
 }

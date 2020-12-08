@@ -32,7 +32,7 @@ type Render interface {
 	Render(c *gin.Context)
 }
 
-func ParamBindJSON(f func(*gin.Context, string, interface{}) Render, name string, bind interface{}) func(c *gin.Context) {
+func FnParamJSON(f func(*gin.Context, string, interface{}) Render, name string, bind interface{}) func(c *gin.Context) {
 	typ := reflect.TypeOf(bind)
 
 	return func(c *gin.Context) {
@@ -52,7 +52,7 @@ func ParamBindJSON(f func(*gin.Context, string, interface{}) Render, name string
 	}
 }
 
-func BindJSON(f func(*gin.Context, interface{}) Render, bind interface{}) func(c *gin.Context) {
+func FnJSON(f func(*gin.Context, interface{}) Render, bind interface{}) func(c *gin.Context) {
 	typ := reflect.TypeOf(bind)
 
 	return func(c *gin.Context) {
@@ -71,14 +71,14 @@ func BindJSON(f func(*gin.Context, interface{}) Render, bind interface{}) func(c
 	}
 }
 
-func Param(f func(*gin.Context, string) Render, name string) func(c *gin.Context) {
+func FnParam(f func(*gin.Context, string) Render, name string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ret := f(c, c.Param(name))
 		ret.Render(c)
 	}
 }
 
-func Bind(f func(*gin.Context, interface{}) Render, bind interface{}) func(c *gin.Context) {
+func FnBind(f func(*gin.Context, interface{}) Render, bind interface{}) func(c *gin.Context) {
 	typ := reflect.TypeOf(bind)
 
 	return func(c *gin.Context) {
@@ -119,15 +119,15 @@ func (n StatusError) Render(c *gin.Context) {
 	log.Println(n.Err)
 }
 
-func NewBadRequestError(msg string, err error) StatusError {
+func New400Error(msg string, err error) StatusError {
 	return StatusError{Msg: msg, Err: err, Status: http.StatusBadRequest}
 }
 
-func NewForbiddenError(msg string, err error) StatusError {
+func New403Error(msg string, err error) StatusError {
 	return StatusError{Msg: msg, Err: err, Status: http.StatusForbidden}
 }
 
-func NewNotFoundError(msg string, err error) StatusError {
+func New404Error(msg string, err error) StatusError {
 	return StatusError{Msg: msg, Err: err, Status: http.StatusNotFound}
 }
 

@@ -17,11 +17,11 @@ func Login(c *gin.Context, bindJSON interface{}) ginx.Render {
 	s := persist.GetUserRepo()
 	user, err := s.GetByUsername(loginInput.Username)
 	if err != nil {
-		return ginx.NewNotFoundError("user not found", err)
+		return ginx.New404Error("user not found", err)
 	}
 
 	if !crypto.ComparePasswords(user.Hash, []byte(loginInput.Password)) {
-		return ginx.NewForbiddenError("user and password not match", nil)
+		return ginx.New403Error("user and password not match", nil)
 	}
 
 	token, _ := crypto.CreateToken(user.Username)

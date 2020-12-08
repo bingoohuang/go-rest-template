@@ -40,10 +40,10 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-func DefaultTo(s, defaultValue string) string {
-	if s == "" {
+func DefaultTo(s []string, defaultValue string) string {
+	if len(s) == 0 || s[0] == "" {
 		return defaultValue
 	}
 
-	return s
+	return s[0]
 }

@@ -29,7 +29,7 @@ type UserInput struct {
 func GetUserById(c *gin.Context, id string) ginx.Render {
 	user, err := persist.GetUserRepo().Get(id)
 	if err != nil {
-		return ginx.NewNotFoundError("user not found", err)
+		return ginx.New404Error("user not found", err)
 	}
 
 	return ginx.JSON(user)
@@ -49,7 +49,7 @@ func GetUsers(c *gin.Context, bind interface{}) ginx.Render {
 	q := bind.(models.User)
 	users, err := persist.GetUserRepo().Query(&q)
 	if err != nil {
-		return ginx.NewNotFoundError("users not found", err)
+		return ginx.New404Error("users not found", err)
 	}
 
 	return ginx.JSON(users)
@@ -65,7 +65,7 @@ func CreateUser(c *gin.Context, bindJSON interface{}) ginx.Render {
 		Role:      models.UserRole{RoleName: userInput.Role},
 	}
 	if err := persist.GetUserRepo().Add(&user); err != nil {
-		return ginx.NewBadRequestError("", err)
+		return ginx.New400Error("", err)
 	}
 
 	return ginx.StatusJSON(http.StatusCreated, user)
@@ -75,7 +75,7 @@ func UpdateUser(c *gin.Context, id string, bindJSON interface{}) ginx.Render {
 	s := persist.GetUserRepo()
 	user, err := s.Get(id)
 	if err != nil {
-		return ginx.NewNotFoundError("user not found", err)
+		return ginx.New404Error("user not found", err)
 	}
 
 	userInput := bindJSON.(UserInput)
@@ -85,7 +85,7 @@ func UpdateUser(c *gin.Context, id string, bindJSON interface{}) ginx.Render {
 	user.Hash = crypto.HashAndSalt([]byte(userInput.Password))
 	user.Role = models.UserRole{RoleName: userInput.Role}
 	if err := s.Update(user); err != nil {
-		return ginx.NewNotFoundError("", err)
+		return ginx.New404Error("", err)
 	}
 
 	return ginx.JSON(user)
@@ -95,11 +95,11 @@ func DeleteUser(c *gin.Context, id string) ginx.Render {
 	s := persist.GetUserRepo()
 	user, err := s.Get(id)
 	if err != nil {
-		return ginx.NewNotFoundError("user not found", err)
+		return ginx.New404Error("user not found", err)
 	}
 
 	if err := s.Delete(user); err != nil {
-		return ginx.NewNotFoundError("", err)
+		return ginx.New404Error("", err)
 	}
 
 	return ginx.StatusJSON(http.StatusNoContent, "")
